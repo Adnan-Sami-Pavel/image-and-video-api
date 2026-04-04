@@ -1,38 +1,69 @@
-
 from fastapi import FastAPI, HTTPException, status
+from typing import List, Dict, Optional, Any, Union, Tuple, Set
+
+app = FastAPI()
+
+all_posts: dict[int, dict[str, Any]] = {
+    1: {"title": "FastAPI Basics", "category": "tech", "published": True, "views": 100},
+    2: {"title": "Deep Dive into RAG", "category": "ai", "published": True, "views": 500},
+    3: {"title": "Privacy Law 101", "category": "legal", "published": False, "views": 20},
+    4: {"title": "LLM Agents in Finance", "category": "ai", "published": True, "views": 1000},
+    5: {"title": "Contract Analysis Bot", "category": "legal", "published": True, "views": 50},
+}
 
 
-app = FastAPI() # type: ignore
 
-textPost: list[str] = ["This is my first post", "This is my second post", "This is my third post"]
+@app.get("/posts")
+def get_posts(category: Optional[str] = None, limit: Optional[int] = None) -> dict[int, dict[str, Any]]:
+    
+    if category in {v["category"] for v in all_posts.values()}:
+        filtered_posts = {
+            k: v 
+            for k, v in all_posts.items() 
+            if v["category"] == category.lower()
+            }
+    else:
+        filtered_posts = all_posts.copy()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{category} is not a valid category. Valid categories are 'tech', 'ai', and 'legal'.")
+        
+    
+    if limit is not None:
+        limited_posts = dict(list(filtered_posts.items())[:limit])
+        return limited_posts
+    return filtered_posts
 
-allPosts: dict[int, dict[str, str]] = {1: {"title": "First Post", "content": "This is the content of the first post"},
-                                       2: {"title": "Second Post", "content": "This is the content of the second post"},
-                                       3: {"title": "Third Post", "content": "This is the content of the third post"}}
-
-@app.get("/name") # type: ignore
-def my_name() -> dict[str, int | str]:
+@app.get("/posts/status")
+def get_published_posts( is_published: bool) -> dict[int, dict[str, Any]]:
     return {
-        "name": "Adnan Sami Pavel", 
-            "age": 27, 
-            "country": "Bangladesh"
-            } 
+        k: v 
+        for k, v in all_posts.items() 
+        if v["published"] == is_published
+        }
 
-@app.get("/about") # type: ignore
-def about_me() -> dict[str, int | str | list[str]]:
-    return {"name": "Adnan Sami Pavel", "age": 27, "country": "Bangladesh", "hobbies": ["coding", "traveling", "cooking"]}
+@app.get("/posts/trending")
+def get_trending_posts(min_views: int) -> dict[int, dict[str, Any]]:
+    return {
+        k: v 
+        for k, v in all_posts.items() 
+        if v["views"] > min_views and v["published"]
+        }
 
-@app.get("/posts") # type: ignore
-def my_posts() -> dict[str, list[str]]:
-    return {"posts": textPost }
-
-@app.post("/post-text") # type: ignore
-def post_text() -> list[str]:
-    textPost[1] = "These are the text that I want to post"
-    return textPost
-
-@app.get("/posts/{post_id}") # type: ignore
-def get_post(post_id: int) -> dict[str, str]:
-    if post_id not in allPosts:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post id: {post_id} not found") # type: ignore
-    return allPosts[post_id] # type: ignore
+@app.get("/search")
+def search_posts(query: Optional[str] = None, category: Optional[str] = None, show_drafts: bool = True) -> dict[int, dict[str, Any]]:
+    
+    available_posts = all_posts.copy()
+    
+    if category:
+        available_posts = {k: v for k, v in all_posts.items() if v["category"] == category.lower()}
+    
+    if query:
+        available_posts = {k: v for k, v in available_posts.items() if query.lower() in v["title"].lower()}
+    
+    if not show_drafts:
+        available_posts = {
+            k: v for k, v in available_posts.items()
+            if v["published"]
+        }
+    
+    return available_posts
+        
