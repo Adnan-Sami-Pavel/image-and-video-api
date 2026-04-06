@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, status
 from typing import List, Dict, Optional, Any, Union, Tuple, Set
+from .schema import PostModel
 
 app = FastAPI()
 
@@ -68,5 +69,8 @@ def search_posts(query: Optional[str] = None, category: Optional[str] = None, sh
     
     return available_posts
 
+@app.post("/upload_post")
+def create_post(post: PostModel) -> PostModel:
+    post_id = 
 
         
