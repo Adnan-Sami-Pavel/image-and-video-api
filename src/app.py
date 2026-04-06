@@ -16,6 +16,7 @@ all_posts: dict[int, dict[str, Any]] = {
 @app.get("/posts")
 def get_posts(category: Optional[str] = None, limit: Optional[int] = None) -> dict[int, dict[str, Any]]:
     
+    
     if category in {v["category"] for v in all_posts.values()}:
         filtered_posts = {
             k: v 
@@ -66,4 +67,6 @@ def search_posts(query: Optional[str] = None, category: Optional[str] = None, sh
         }
     
     return available_posts
+
+
         
