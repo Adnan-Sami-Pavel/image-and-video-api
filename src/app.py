@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, status
 from typing import List, Dict, Optional, Any, Union, Tuple, Set
-from .schema import PostModel
+from .schema import PostModel, CreatePost, ResponsePost
 
 app = FastAPI()
 
@@ -71,12 +71,15 @@ def search_posts(query: Optional[str] = None, category: Optional[str] = None, sh
 
 
 
-@app.post("/upload_post", response_model= PostResponse)
-def create_post(post: PostModel) -> dict:
+@app.post("/upload_post", response_model= ResponsePost)
+def create_post(post: CreatePost):
     post_id = max(all_posts.keys(), default = 0)+1
-    new_post = {"id": post_id, **post.model_dump()}
-    all_posts[post_id] = new_post
-    return new_post
+    response = ResponsePost(
+        id = post_id,
+        **post.model_dump()
+    )
+    ##new_post = {"id": post_id, **post.model_dump()}
+    all_posts[post_id] = response.model_dump()
+    return response
     
 
-        
