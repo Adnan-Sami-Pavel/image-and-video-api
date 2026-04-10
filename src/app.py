@@ -69,8 +69,14 @@ def search_posts(query: Optional[str] = None, category: Optional[str] = None, sh
     
     return available_posts
 
-@app.post("/upload_post")
-def create_post(post: PostModel) -> PostModel:
-    post_id = 
+
+
+@app.post("/upload_post", response_model= PostResponse)
+def create_post(post: PostModel) -> dict:
+    post_id = max(all_posts.keys(), default = 0)+1
+    new_post = {"id": post_id, **post.model_dump()}
+    all_posts[post_id] = new_post
+    return new_post
+    
 
         

@@ -5,4 +5,9 @@ class PostModel(BaseModel):
     category: str
     published: bool
     views: int
-    
+
+class CreatePost(PostModel):
+    pass
+
+class ResponsePost(PostModel):
+    id: int
