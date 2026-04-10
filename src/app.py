@@ -92,7 +92,7 @@ def optional_edit(post_id: int, post: UpdateModel):
     
     all_posts[post_id].update(update_contents)
     
-    return ResponsePost(**all_posts[post_id])
+    return ResponsePost(id = post_id, **all_posts[post_id])
 
 @app.delete("/post/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(post_id: int) -> None:
