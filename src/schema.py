@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+from typing import Optional
 class PostModel(BaseModel):
     title: str
     category: str
@@ -11,3 +11,9 @@ class CreatePost(PostModel):
 
 class ResponsePost(PostModel):
     id: int
+
+class UpdateModel(BaseModel):
+    title: Optional[str] = None
+    category: Optional[str] = None
+    published: Optional[bool] = None
+    views: Optional[int] = None

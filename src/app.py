@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, status
 from typing import List, Dict, Optional, Any, Union, Tuple, Set
-from .schema import PostModel, CreatePost, ResponsePost
+from .schema import PostModel, CreatePost, ResponsePost, UpdateModel
 
 app = FastAPI()
 
@@ -13,26 +13,9 @@ all_posts: dict[int, dict[str, Any]] = {
 }
 
 
-
 @app.get("/posts")
-def get_posts(category: Optional[str] = None, limit: Optional[int] = None) -> dict[int, dict[str, Any]]:
-    
-    
-    if category in {v["category"] for v in all_posts.values()}:
-        filtered_posts = {
-            k: v 
-            for k, v in all_posts.items() 
-            if v["category"] == category.lower()
-            }
-    else:
-        filtered_posts = all_posts.copy()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{category} is not a valid category. Valid categories are 'tech', 'ai', and 'legal'.")
-        
-    
-    if limit is not None:
-        limited_posts = dict(list(filtered_posts.items())[:limit])
-        return limited_posts
-    return filtered_posts
+def get_posts() -> dict[int, dict[str, Any]]:
+    return all_posts
 
 @app.get("/posts/status")
 def get_published_posts( is_published: bool) -> dict[int, dict[str, Any]]:
@@ -95,3 +78,25 @@ def update_post(post_id: int, post: CreatePost):
     all_posts[post_id] = response.model_dump()
     
     return response
+
+@app.patch("/optional_edit/{post_id}", response_model= ResponsePost)
+def optional_edit(post_id: int, post: UpdateModel):
+    if post_id not in all_posts:
+        raise HTTPException(status_code=404, detail=f"post id {post_id} not found")
+    
+    ##stored_posts = all_posts[post_id]
+    update_contents = post.model_dump(exclude_unset= True)
+    
+    """updated_post = {**stored_posts, **update_contents}
+    all_posts[post_id] = updated_post"""
+    
+    all_posts[post_id].update(update_contents)
+    
+    return ResponsePost(**all_posts[post_id])
+
+@app.delete("/post/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_post(post_id: int) -> None:
+    if post_id not in all_posts:
+        raise HTTPException(status_code=404, detail=f"Post id {post_id} not found")
+    del all_posts[post_id]
+    return None
