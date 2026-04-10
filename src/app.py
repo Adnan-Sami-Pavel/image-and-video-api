@@ -82,4 +82,16 @@ def create_post(post: CreatePost):
     all_posts[post_id] = response.model_dump()
     return response
     
-
+@app.put("/edit_post/{post_id}", response_model= ResponsePost)
+def update_post(post_id: int, post: CreatePost):
+    if post_id not in all_posts:
+        raise HTTPException(status_code=404, detail=f"Post {post_id} not found")
+    
+    response = ResponsePost(
+        id = post_id,
+        **post.model_dump()
+    )
+    
+    all_posts[post_id] = response.model_dump()
+    
+    return response
